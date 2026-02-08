@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import LinkCard from '../components/LinkCard';
 
@@ -15,9 +15,7 @@ function Dashboard() {
   const fetchLinks = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/api/links/list', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/links/list');
 
       if (response.data.success) {
         const fetchedLinks = response.data.data || [];

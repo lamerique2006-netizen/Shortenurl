@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import Modal from '../components/Modal';
 
@@ -29,9 +29,7 @@ function Hero() {
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/links/create', { long_url: longUrl }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.post('/api/links/create', { long_url: longUrl });
 
       if (response.data.success) {
         setShortUrl(response.data.data);

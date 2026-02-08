@@ -1,5 +1,5 @@
 import React, { createContext, useState, useCallback, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -18,9 +18,7 @@ export function AuthProvider({ children }) {
     if (!token) return;
 
     try {
-      const response = await axios.get('/api/auth/profile', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/auth/profile');
       if (response.data.success) {
         setUser(response.data.data);
       } else {
@@ -39,7 +37,7 @@ export function AuthProvider({ children }) {
   const signup = async (email, password) => {
     setLoading(true);
     try {
-      const response = await axios.post('/api/auth/signup', { email, password });
+      const response = await api.post('/api/auth/signup', { email, password });
       if (response.data.success) {
         setToken(response.data.data.token);
         setUser(response.data.data);
@@ -57,7 +55,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      const response = await api.post('/api/auth/login', { email, password });
       if (response.data.success) {
         setToken(response.data.data.token);
         setUser(response.data.data);
