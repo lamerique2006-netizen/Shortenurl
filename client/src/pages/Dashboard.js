@@ -69,19 +69,21 @@ function Dashboard() {
   }, [user, navigate, fetchLinks]);
 
   return (
-    <div className="min-h-screen bg-light dark:bg-dark md:flex">
+    <div className="min-h-screen bg-light dark:bg-dark">
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
-      <div className="w-full md:ml-64 transition-all duration-300">
-        {/* Mobile hamburger */}
-        <div className="md:hidden sticky top-0 bg-white dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700 z-20">
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="text-2xl"
-          >
-            ☰
-          </button>
-        </div>
+      
+      {/* Mobile hamburger - only on small screens */}
+      <div className="md:hidden sticky top-0 bg-white dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700 z-20">
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="text-2xl"
+        >
+          ☰
+        </button>
+      </div>
 
+      {/* Main content */}
+      <div className="md:ml-64">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {/* Header */}
         <motion.div
@@ -198,7 +200,7 @@ function Dashboard() {
             </div>
           )}
         </motion.div>
-      </div>
+        </div>
       </div>
     </div>
   );

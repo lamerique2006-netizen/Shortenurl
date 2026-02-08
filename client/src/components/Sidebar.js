@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -12,6 +12,10 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
     { icon: '⚙️', label: 'Settings' }
   ];
 
+  const handleMenuClick = () => {
+    setMobileOpen(false);
+  };
+
   return (
     <>
       {/* Mobile overlay */}
@@ -22,14 +26,10 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
         />
       )}
 
-      {/* Sidebar */}
-      <motion.div
-        initial={{ x: -250 }}
-        animate={{ x: mobileOpen ? 0 : -250 }}
-        className={`fixed left-0 top-16 md:top-0 h-screen bg-gray-900 text-white border-r border-gray-800 w-64 md:sticky md:translate-x-0 z-40 md:z-0`}
-      >
-        {/* Header (Desktop only) */}
-        <div className="hidden md:block p-4 border-b border-gray-800">
+      {/* Sidebar - Desktop (always visible) */}
+      <div className="hidden md:fixed md:block left-0 top-0 h-screen bg-gray-900 text-white border-r border-gray-800 w-64 z-40">
+        {/* Header */}
+        <div className="p-4 border-b border-gray-800">
           <h2 className="text-xl font-bold text-indigo-400">Short.ly</h2>
         </div>
 
@@ -38,7 +38,41 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
           {menuItems.map((item, i) => (
             <button
               key={i}
-              onClick={() => setMobileOpen(false)}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition group"
+            >
+              <span className="text-xl">{item.icon}</span>
+              <span className="group-hover:text-indigo-400 transition">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {/* User Info */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-800 p-4 space-y-3">
+          <div>
+            <p className="text-xs text-gray-400">Logged in as</p>
+            <p className="text-sm font-semibold truncate">{user?.email}</p>
+          </div>
+          <button
+            onClick={logout}
+            className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition text-sm font-semibold"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {/* Sidebar - Mobile (overlay only when open) */}
+      <motion.div
+        initial={{ x: -250 }}
+        animate={{ x: mobileOpen ? 0 : -250 }}
+        className="md:hidden fixed left-0 top-16 h-screen bg-gray-900 text-white border-r border-gray-800 w-64 z-40"
+      >
+        {/* Menu */}
+        <nav className="p-4 space-y-2">
+          {menuItems.map((item, i) => (
+            <button
+              key={i}
+              onClick={handleMenuClick}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition group"
             >
               <span className="text-xl">{item.icon}</span>
