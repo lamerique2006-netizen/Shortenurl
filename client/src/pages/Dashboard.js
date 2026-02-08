@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import LinkCard from '../components/LinkCard';
+import Sidebar from '../components/Sidebar';
 
 function Dashboard() {
   const { user } = useAuth();
@@ -67,8 +68,10 @@ function Dashboard() {
   }, [user, navigate, fetchLinks]);
 
   return (
-    <div className="min-h-screen bg-light dark:bg-dark">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-light dark:bg-dark flex">
+      <Sidebar />
+      <div className="flex-1 ml-64 transition-all duration-300">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -184,6 +187,7 @@ function Dashboard() {
             </div>
           )}
         </motion.div>
+        </div>
       </div>
     </div>
   );
