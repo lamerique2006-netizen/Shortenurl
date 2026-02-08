@@ -23,10 +23,10 @@ function Modal({ mode = 'login', onClose }) {
         ? await login(email, password)
         : await signup(email, password);
 
-      if (result.success) {
-        onClose();
-        setTimeout(() => navigate('/dashboard'), 300);
-      } else {
+      onClose();
+      setTimeout(() => navigate('/dashboard'), 300);
+      
+      if (!result.success) {
         setError(result.error || 'Something went wrong');
       }
     } catch (err) {
