@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Short.ly Backend Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0B0F19;
+      color: #fff;
+      padding: 20px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { margin-bottom: 20px; color: #4F46E5; }
+    .section {
+      background: #1f2937;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #374151;
+    }
+    h2 { font-size: 18px; margin-bottom: 15px; color: #60a5fa; }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #374151;
+      border-radius: 6px;
+      background: #111827;
+      color: #fff;
+      font-size: 14px;
+    }
+    button {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    button:hover { background: #4338CA; }
+    button:disabled { background: #6b7280; cursor: not-allowed; }
+    .response {
+      background: #111827;
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 15px;
+      border-left: 3px solid #10B981;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 12px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .error { border-left-color: #EF4444; color: #fca5a5; }
+    .success { border-left-color: #10B981; color: #a7f3d0; }
+    .status {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    .status.ok { background: #10B98125; color: #a7f3d0; }
+    .status.error { background: #EF444425; color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Short.ly Backend Test Panel</h1>
+
+    <!-- Status -->
+    <div class="section">
+      <h2>Backend Status</h2>
+      <div id="status" class="status ok">✅ Backend is running</div>
+      <div id="firebase-status" class="status">Firebase: Checking...</div>
+    </div>
+
+    <!-- Signup Test -->
+    <div class="section">
+      <h2>Test Signup (Firebase Auth)</h2>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="test@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="password123">
+      </div>
+      <button onclick="testSignup()">Sign Up</button>
+      <div id="signup-response" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- Login Test -->
+    <div class="section">
+      <h2>Test Login (Firebase Auth)</h2>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="test@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="password123">
+      </div>
+      <button onclick="testLogin()">Login</button>
+      <div id="login-response" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- Create Link Test -->
+    <div class="section">
+      <h2>Test Create Short Link</h2>
+      <div class="form-group">
+        <label>Token (from login above)</label>
+        <input type="text" id="token" placeholder="Paste token from login response">
+      </div>
+      <div class="form-group">
+        <label>Long URL</label>
+        <input type="text" id="long-url" placeholder="https://example.com/very/long/url">
+      </div>
+      <button onclick="testCreateLink()">Create Short Link</button>
+      <div id="link-response" class="response" style="display:none;"></div>
+    </div>
+
+    <!-- Get Links Test -->
+    <div class="section">
+      <h2>Test Get User Links</h2>
+      <div class="form-group">
+        <label>Token</label>
+        <input type="text" id="token-list" placeholder="Paste token from login response">
+      </div>
+      <button onclick="testGetLinks()">Get My Links</button>
+      <div id="links-response" class="response" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.origin;
+
+    function showResponse(elementId, data, isError = false) {
+      const el = document.getElementById(elementId);
+      el.textContent = JSON.stringify(data, null, 2);
+      el.className = `response ${isError ? 'error' : 'success'}`;
+      el.style.display = 'block';
+    }
+
+    async function testSignup() {
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+
+      if (!email || !password) {
+        showResponse('signup-response', { error: 'Email and password required' }, true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        showResponse('signup-response', data, !data.success);
+      } catch (error) {
+        showResponse('signup-response', { error: error.message }, true);
+      }
+    }
+
+    async function testLogin() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        showResponse('login-response', { error: 'Email and password required' }, true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        showResponse('login-response', data, !data.success);
+        
+        if (data.success && data.data.token) {
+          document.getElementById('token').value = data.data.token;
+          document.getElementById('token-list').value = data.data.token;
+        }
+      } catch (error) {
+        showResponse('login-response', { error: error.message }, true);
+      }
+    }
+
+    async function testCreateLink() {
+      const token = document.getElementById('token').value;
+      const longUrl = document.getElementById('long-url').value;
+
+      if (!token) {
+        showResponse('link-response', { error: 'Token required. Login first.' }, true);
+        return;
+      }
+      if (!longUrl) {
+        showResponse('link-response', { error: 'Long URL required' }, true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/links/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ long_url: longUrl })
+        });
+        const data = await res.json();
+        showResponse('link-response', data, !data.success);
+      } catch (error) {
+        showResponse('link-response', { error: error.message }, true);
+      }
+    }
+
+    async function testGetLinks() {
+      const token = document.getElementById('token-list').value;
+
+      if (!token) {
+        showResponse('links-response', { error: 'Token required. Login first.' }, true);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/links/list`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        showResponse('links-response', data, !data.success);
+      } catch (error) {
+        showResponse('links-response', { error: error.message }, true);
+      }
+    }
+
+    // Check Firebase on load
+    window.addEventListener('load', async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/auth/profile`, {
+          headers: { 'Authorization': 'Bearer test' }
+        });
+        const el = document.getElementById('firebase-status');
+        el.textContent = '✅ Firebase: Connected';
+        el.className = 'status ok';
+      } catch (error) {
+        const el = document.getElementById('firebase-status');
+        el.textContent = '⚠️ Firebase: Check backend logs';
+        el.className = 'status error';
+      }
+    });
+  </script>
+</body>
+</html>

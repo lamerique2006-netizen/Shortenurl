@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
+const fs = require('fs');
 const { db } = require('./firebase-config');
 const authRoutes = require('./routes/auth');
 const linksRoutes = require('./routes/links');
@@ -17,6 +19,12 @@ app.use(cors({
   allowedHeaders: 'Content-Type,Authorization'
 }));
 app.use(express.json());
+
+// Test Panel (for debugging)
+app.get('/test', (req, res) => {
+  const testPath = path.join(__dirname, 'test.html');
+  res.sendFile(testPath);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
