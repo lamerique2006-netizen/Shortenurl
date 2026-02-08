@@ -14,6 +14,7 @@ function Dashboard() {
   const [stats, setStats] = useState({ totalLinks: 0, totalClicks: 0 });
   const [longUrl, setLongUrl] = useState('');
   const [creating, setCreating] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const fetchLinks = useCallback(async () => {
     setLoading(true);
@@ -68,10 +69,20 @@ function Dashboard() {
   }, [user, navigate, fetchLinks]);
 
   return (
-    <div className="min-h-screen bg-light dark:bg-dark flex">
-      <Sidebar />
-      <div className="flex-1 ml-64 transition-all duration-300">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-light dark:bg-dark md:flex">
+      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+      <div className="w-full md:ml-64 transition-all duration-300">
+        {/* Mobile hamburger */}
+        <div className="md:hidden sticky top-0 bg-white dark:bg-gray-900 p-4 border-b border-gray-200 dark:border-gray-700 z-20">
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="text-2xl"
+          >
+            ☰
+          </button>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -187,7 +198,7 @@ function Dashboard() {
             </div>
           )}
         </motion.div>
-        </div>
+      </div>
       </div>
     </div>
   );
