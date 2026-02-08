@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import LinkCard from '../components/LinkCard';
 
 function Dashboard() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
