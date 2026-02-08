@@ -1,0 +1,15 @@
+node_modules
+.env
+.env.local
+.env.*.local
+*.db
+dist
+build
+.DS_Store
+.idea
+*.swp
+*.swo
+*~
+.vscode
+client/build
+server/shortener.db

@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "buildCommand": "cd client && npm run build",
+  "outputDirectory": "client/build",
+  "framework": "react",
+  "env": {
+    "REACT_APP_API_URL": "@api_url"
+  }
+}
