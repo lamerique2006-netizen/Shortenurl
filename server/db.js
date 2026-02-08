@@ -70,8 +70,19 @@ const database = {
 
   // Click tracking
   logClick: (linkId, ip, callback) => {
-    db.run('INSERT INTO clicks (link_id, ip) VALUES (?, ?)', [linkId, ip], callback);
-    db.run('UPDATE links SET click_count = click_count + 1 WHERE id = ?', [linkId]);
+    // Insert click record
+    db.run('INSERT INTO clicks (link_id, ip) VALUES (?, ?)', [linkId, ip], (err) => {
+      if (err) {
+        console.error('Error logging click:', err);
+        if (callback) callback(err);
+        return;
+      }
+      // Update click count
+      db.run('UPDATE links SET click_count = click_count + 1 WHERE id = ?', [linkId], (err) => {
+        if (err) console.error('Error updating click count:', err);
+        if (callback) callback(err);
+      });
+    });
   },
 
   getClicksForLink: (linkId, callback) => {

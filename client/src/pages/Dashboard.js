@@ -74,6 +74,10 @@ function Dashboard() {
     }
 
     fetchLinks();
+
+    // Auto-refresh links every 10 seconds to show latest click counts
+    const interval = setInterval(fetchLinks, 10000);
+    return () => clearInterval(interval);
   }, [user, navigate, fetchLinks]);
 
   return (
