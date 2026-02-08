@@ -27,14 +27,14 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
       )}
 
       {/* Sidebar - Desktop (always visible) */}
-      <div className="hidden md:fixed md:block left-0 top-0 h-screen bg-gray-900 text-white border-r border-gray-800 w-64 z-40">
+      <div className="hidden md:flex md:fixed md:flex-col left-0 top-0 h-screen bg-gray-900 text-white border-r border-gray-800 w-64 z-40">
         {/* Header */}
         <div className="p-4 border-b border-gray-800">
           <h2 className="text-xl font-bold text-indigo-400">Short.ly</h2>
         </div>
 
-        {/* Menu */}
-        <nav className="p-4 space-y-2">
+        {/* Menu - Scrollable */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item, i) => (
             <button
               key={i}
@@ -46,8 +46,8 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
           ))}
         </nav>
 
-        {/* User Info */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-800 p-4 space-y-3">
+        {/* User Info - Always at bottom */}
+        <div className="border-t border-gray-800 p-4 space-y-3">
           <div>
             <p className="text-xs text-gray-400">Logged in as</p>
             <p className="text-sm font-semibold truncate">{user?.email}</p>
@@ -65,10 +65,10 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
       <motion.div
         initial={{ x: -250 }}
         animate={{ x: mobileOpen ? 0 : -250 }}
-        className="md:hidden fixed left-0 top-16 h-screen bg-gray-900 text-white border-r border-gray-800 w-64 z-40"
+        className="md:hidden fixed left-0 top-16 h-[calc(100vh-64px)] bg-gray-900 text-white border-r border-gray-800 w-64 z-40 flex flex-col"
       >
-        {/* Menu */}
-        <nav className="p-4 space-y-2">
+        {/* Menu - Scrollable */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item, i) => (
             <button
               key={i}
@@ -81,8 +81,8 @@ function Sidebar({ mobileOpen, setMobileOpen }) {
           ))}
         </nav>
 
-        {/* User Info */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-gray-800 p-4 space-y-3">
+        {/* User Info - Always at bottom */}
+        <div className="border-t border-gray-800 p-4 space-y-3">
           <div>
             <p className="text-xs text-gray-400">Logged in as</p>
             <p className="text-sm font-semibold truncate">{user?.email}</p>
