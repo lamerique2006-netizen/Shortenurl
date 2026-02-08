@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const db = require('./db');
 const authRoutes = require('./routes/auth');
 const linksRoutes = require('./routes/links');
+const adminRoutes = require('./routes/admin');
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/links', linksRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Redirect short link
 app.get('/:shortCode', (req, res) => {

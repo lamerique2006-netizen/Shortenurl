@@ -6,6 +6,7 @@ import Hero from './pages/Hero';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import Dashboard from './pages/Dashboard';
+import Admin from './pages/Admin';
 import './styles/globals.css';
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </div>
       </Router>

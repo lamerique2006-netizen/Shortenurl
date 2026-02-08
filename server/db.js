@@ -72,6 +72,26 @@ const database = {
 
   getClicksForLink: (linkId, callback) => {
     db.all('SELECT * FROM clicks WHERE link_id = ? ORDER BY timestamp DESC', [linkId], callback);
+  },
+
+  // Admin methods
+  getAllUsers: (callback) => {
+    db.all('SELECT id, email, created_at FROM users ORDER BY created_at DESC', callback);
+  },
+
+  getAllLinks: (callback) => {
+    db.all(`
+      SELECT l.id, l.user_id, l.long_url, l.short_code, l.click_count, l.created_at, u.email 
+      FROM links l 
+      JOIN users u ON l.user_id = u.id 
+      ORDER BY l.created_at DESC
+    `, callback);
+  },
+
+  getTotalClicks: (callback) => {
+    db.get('SELECT SUM(click_count) as total FROM links', (err, result) => {
+      callback(err, result?.total || 0);
+    });
   }
 };
 
