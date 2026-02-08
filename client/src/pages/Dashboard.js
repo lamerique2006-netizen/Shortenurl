@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -12,16 +12,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalLinks: 0, totalClicks: 0 });
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/');
-      return;
-    }
-
-    fetchLinks();
-  }, [user, token]);
-
-  const fetchLinks = async () => {
+  const fetchLinks = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get('/api/links/list', {
@@ -41,7 +32,16 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/');
+      return;
+    }
+
+    fetchLinks();
+  }, [user, navigate, fetchLinks]);
 
   return (
     <div className="min-h-screen bg-light dark:bg-dark">
