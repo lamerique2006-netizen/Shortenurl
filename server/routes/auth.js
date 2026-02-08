@@ -1,10 +1,7 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const db = require('../db');
+const { auth, db } = require('../firebase-config');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Signup
 router.post('/signup', async (req, res) => {
@@ -14,39 +11,67 @@ router.post('/signup', async (req, res) => {
     return res.json({ success: false, error: 'Email and password required' });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    // Create user in Firebase Auth
+    const userRecord = await auth.createUser({
+      email,
+      password,
+    });
 
-  db.createUser(email, hashedPassword, (err) => {
-    if (err) {
-      return res.json({ success: false, error: 'User already exists' });
-    }
+    // Store user info in Firestore
+    await db.collection('users').doc(userRecord.uid).set({
+      email,
+      createdAt: new Date(),
+      uid: userRecord.uid,
+    });
 
-    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ success: true, data: { token, email } });
-  });
+    // Create custom token for frontend
+    const customToken = await auth.createCustomToken(userRecord.uid);
+
+    res.json({ 
+      success: true, 
+      data: { 
+        token: customToken, 
+        email, 
+        uid: userRecord.uid 
+      } 
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
 });
 
-// Login
-router.post('/login', (req, res) => {
+// Login (frontend should use Firebase SDK, but we'll support it here too)
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  db.getUserByEmail(email, async (err, user) => {
-    if (err || !user) {
-      return res.json({ success: false, error: 'User not found' });
-    }
+  if (!email || !password) {
+    return res.json({ success: false, error: 'Email and password required' });
+  }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.json({ success: false, error: 'Incorrect password' });
-    }
+  try {
+    // Find user by email (Firebase Admin SDK doesn't have direct password auth)
+    // Frontend should use Firebase SDK instead, but this is a backup
+    const userRecord = await auth.getUserByEmail(email);
+    
+    // Create custom token
+    const customToken = await auth.createCustomToken(userRecord.uid);
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ success: true, data: { token, email: user.email } });
-  });
+    res.json({ 
+      success: true, 
+      data: { 
+        token: customToken, 
+        email: userRecord.email,
+        uid: userRecord.uid
+      } 
+    });
+  } catch (error) {
+    res.json({ success: false, error: 'Invalid email or password' });
+  }
 });
 
-// Profile
-router.get('/profile', (req, res) => {
+// Get profile (verify token)
+router.get('/profile', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
@@ -54,8 +79,24 @@ router.get('/profile', (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    res.json({ success: true, data: { email: decoded.email, id: decoded.id } });
+    // Verify the token
+    const decodedToken = await auth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
+    // Get user from Firestore
+    const userDoc = await db.collection('users').doc(uid).get();
+
+    if (!userDoc.exists) {
+      return res.json({ success: false, error: 'User not found' });
+    }
+
+    res.json({ 
+      success: true, 
+      data: { 
+        email: userDoc.data().email,
+        uid,
+      } 
+    });
   } catch (error) {
     res.json({ success: false, error: 'Invalid token' });
   }

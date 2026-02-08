@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const db = require('./db');
+const { db } = require('./firebase-config');
 const authRoutes = require('./routes/auth');
 const linksRoutes = require('./routes/links');
 
@@ -18,29 +18,41 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize DB
-db.init();
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/links', linksRoutes);
 
 // Redirect short link
-app.get('/:shortCode', (req, res) => {
+app.get('/:shortCode', async (req, res) => {
   const { shortCode } = req.params;
   const ip = req.ip || req.connection.remoteAddress;
 
-  db.getLinkByShortCode(shortCode, (err, link) => {
-    if (err || !link) {
+  try {
+    const linkDoc = await db.collection('links').doc(shortCode).get();
+
+    if (!linkDoc.exists) {
       return res.status(404).json({ error: 'Link not found' });
     }
 
+    const linkData = linkDoc.data();
+
     // Log click
-    db.logClick(link.id, ip);
+    await db.collection('clicks').add({
+      linkId: shortCode,
+      ip,
+      timestamp: new Date(),
+    });
+
+    // Update click count
+    await linkDoc.ref.update({
+      click_count: (linkData.click_count || 0) + 1
+    });
 
     // Redirect
-    res.redirect(link.long_url);
-  });
+    res.redirect(linkData.long_url);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 app.listen(PORT, () => {

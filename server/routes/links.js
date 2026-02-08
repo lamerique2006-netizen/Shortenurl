@@ -1,18 +1,16 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const db = require('../db');
+const { auth, db } = require('../firebase-config');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Middleware: verify token
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.json({ success: false, error: 'Unauthorized' });
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.userId = decoded.id;
+    const decodedToken = await auth.verifyIdToken(token);
+    req.uid = decodedToken.uid;
     next();
   } catch (error) {
     res.json({ success: false, error: 'Invalid token' });
@@ -25,56 +23,99 @@ const generateShortCode = () => {
 };
 
 // Create short link
-router.post('/create', verifyToken, (req, res) => {
+router.post('/create', verifyToken, async (req, res) => {
   const { long_url } = req.body;
 
   if (!long_url) {
     return res.json({ success: false, error: 'URL required' });
   }
 
-  const shortCode = generateShortCode();
+  try {
+    const shortCode = generateShortCode();
 
-  db.createLink(req.userId, long_url, shortCode, (err) => {
-    if (err) {
-      return res.json({ success: false, error: 'Failed to create link' });
-    }
+    // Store in Firestore
+    const linkRef = db.collection('links').doc(shortCode);
+    await linkRef.set({
+      uid: req.uid,
+      long_url,
+      short_code: shortCode,
+      click_count: 0,
+      createdAt: new Date(),
+    });
 
-    res.json({ success: true, data: { short_url: `/${shortCode}`, short_code: shortCode, long_url } });
-  });
+    res.json({ 
+      success: true, 
+      data: { 
+        short_url: `/${shortCode}`, 
+        short_code: shortCode, 
+        long_url 
+      } 
+    });
+  } catch (error) {
+    res.json({ success: false, error: 'Failed to create link' });
+  }
 });
 
 // Get user's links
-router.get('/list', verifyToken, (req, res) => {
-  db.getUserLinks(req.userId, (err, links) => {
-    if (err) {
-      return res.json({ success: false, error: 'Failed to fetch links' });
-    }
+router.get('/list', verifyToken, async (req, res) => {
+  try {
+    const snapshot = await db.collection('links')
+      .where('uid', '==', req.uid)
+      .orderBy('createdAt', 'desc')
+      .get();
 
-    res.json({ success: true, data: links || [] });
-  });
+    const links = [];
+    snapshot.forEach(doc => {
+      links.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    res.json({ success: true, data: links });
+  } catch (error) {
+    res.json({ success: false, error: 'Failed to fetch links' });
+  }
 });
 
 // Get analytics for a link
-router.get('/:shortCode/analytics', verifyToken, (req, res) => {
+router.get('/:shortCode/analytics', verifyToken, async (req, res) => {
   const { shortCode } = req.params;
 
-  db.getLinkByShortCode(shortCode, (err, link) => {
-    if (err || !link) {
+  try {
+    const linkDoc = await db.collection('links').doc(shortCode).get();
+
+    if (!linkDoc.exists) {
       return res.json({ success: false, error: 'Link not found' });
     }
 
-    if (link.user_id !== req.userId) {
+    const linkData = linkDoc.data();
+
+    if (linkData.uid !== req.uid) {
       return res.json({ success: false, error: 'Unauthorized' });
     }
 
-    db.getClicksForLink(link.id, (err, clicks) => {
-      if (err) {
-        return res.json({ success: false, error: 'Failed to fetch analytics' });
-      }
+    // Get clicks for this link
+    const clicksSnapshot = await db.collection('clicks')
+      .where('linkId', '==', shortCode)
+      .orderBy('timestamp', 'desc')
+      .get();
 
-      res.json({ success: true, data: { link, clicks: clicks || [] } });
+    const clicks = [];
+    clicksSnapshot.forEach(doc => {
+      clicks.push(doc.data());
     });
-  });
+
+    res.json({ 
+      success: true, 
+      data: { 
+        link: { id: shortCode, ...linkData }, 
+        clicks 
+      } 
+    });
+  } catch (error) {
+    res.json({ success: false, error: 'Failed to fetch analytics' });
+  }
 });
 
 module.exports = router;
