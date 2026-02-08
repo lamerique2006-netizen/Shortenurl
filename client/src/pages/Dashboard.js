@@ -15,6 +15,7 @@ function Dashboard() {
   const [longUrl, setLongUrl] = useState('');
   const [creating, setCreating] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [message, setMessage] = useState('');
 
   const fetchLinks = useCallback(async () => {
     setLoading(true);
@@ -44,16 +45,23 @@ function Dashboard() {
     }
 
     setCreating(true);
+    setMessage('');
     try {
       const response = await api.post('/api/links/create', { long_url: longUrl });
       if (response.data.success) {
         setLongUrl('');
+        if (response.data.data.isExisting) {
+          setMessage('✅ This URL already exists in your links!');
+        } else {
+          setMessage('✅ New link created successfully!');
+        }
         fetchLinks(); // Refresh the list
+        setTimeout(() => setMessage(''), 3000);
       } else {
-        alert(response.data.error || 'Failed to create link');
+        setMessage(`❌ ${response.data.error || 'Failed to create link'}`);
       }
     } catch (error) {
-      alert('Error creating link');
+      setMessage(`❌ Error creating link: ${error.message}`);
     } finally {
       setCreating(false);
     }
@@ -146,23 +154,38 @@ function Dashboard() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
             Create New Short Link
           </h2>
-          <form onSubmit={handleCreateLink} className="flex flex-col md:flex-row gap-4">
-            <input
-              type="url"
-              placeholder="Paste your long URL here..."
-              value={longUrl}
-              onChange={(e) => setLongUrl(e.target.value)}
-              className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-indigo-600 transition"
-            />
-            <motion.button
-              type="submit"
-              disabled={creating}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {creating ? 'Creating...' : 'Shorten'}
-            </motion.button>
+          <form onSubmit={handleCreateLink} className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <input
+                type="url"
+                placeholder="Paste your long URL here..."
+                value={longUrl}
+                onChange={(e) => setLongUrl(e.target.value)}
+                className="flex-1 px-4 py-3 rounded-lg border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-indigo-600 transition"
+              />
+              <motion.button
+                type="submit"
+                disabled={creating}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {creating ? 'Creating...' : 'Shorten'}
+              </motion.button>
+            </div>
+            {message && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={`p-4 rounded-lg ${
+                  message.includes('✅')
+                    ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-200'
+                    : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200'
+                }`}
+              >
+                {message}
+              </motion.div>
+            )}
           </form>
         </motion.div>
 

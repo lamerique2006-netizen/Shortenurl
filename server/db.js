@@ -60,6 +60,10 @@ const database = {
     db.get('SELECT * FROM links WHERE short_code = ?', [shortCode], callback);
   },
 
+  getLinkByUserAndUrl: (userId, longUrl, callback) => {
+    db.get('SELECT * FROM links WHERE user_id = ? AND long_url = ?', [userId, longUrl], callback);
+  },
+
   getUserLinks: (userId, callback) => {
     db.all('SELECT * FROM links WHERE user_id = ? ORDER BY created_at DESC', [userId], callback);
   },

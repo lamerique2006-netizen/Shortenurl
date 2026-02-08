@@ -32,14 +32,38 @@ router.post('/create', verifyToken, (req, res) => {
     return res.json({ success: false, error: 'URL required' });
   }
 
-  const shortCode = generateShortCode();
-
-  db.createLink(req.userId, long_url, shortCode, (err) => {
-    if (err) {
-      return res.json({ success: false, error: 'Failed to create link' });
+  // Check if user already shortened this URL
+  db.getLinkByUserAndUrl(req.userId, long_url, (err, existingLink) => {
+    if (existingLink) {
+      // Return existing link instead of creating a new one
+      return res.json({
+        success: true,
+        data: {
+          short_url: `/${existingLink.short_code}`,
+          short_code: existingLink.short_code,
+          long_url: existingLink.long_url,
+          isExisting: true
+        }
+      });
     }
 
-    res.json({ success: true, data: { short_url: `/${shortCode}`, short_code: shortCode, long_url } });
+    const shortCode = generateShortCode();
+
+    db.createLink(req.userId, long_url, shortCode, (err) => {
+      if (err) {
+        return res.json({ success: false, error: 'Failed to create link' });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          short_url: `/${shortCode}`,
+          short_code: shortCode,
+          long_url,
+          isExisting: false
+        }
+      });
+    });
   });
 });
 
