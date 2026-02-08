@@ -27,8 +27,7 @@ function Navbar({ darkMode, setDarkMode }) {
 
             {/* Middle - Features (Desktop Only) */}
             <div className="hidden md:flex gap-8 text-gray-700 dark:text-gray-300">
-              <a href="#features" className="hover:text-indigo-600 transition">Features</a>
-              <a href="#pricing" className="hover:text-indigo-600 transition">Pricing</a>
+              <Link to="/pricing" className="hover:text-indigo-600 transition">Pricing</Link>
             </div>
 
             {/* Right - Auth / User Menu */}

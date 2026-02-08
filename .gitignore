@@ -12,5 +12,4 @@ build
 *~
 .vscode
 client/build
-serviceAccountKey.json
 firebase-debug.log

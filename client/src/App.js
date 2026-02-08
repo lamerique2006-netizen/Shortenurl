@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Hero from './pages/Hero';
+import Pricing from './pages/Pricing';
 import Dashboard from './pages/Dashboard';
 import './styles/globals.css';
 
@@ -27,6 +28,7 @@ function App() {
           <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
           <Routes>
             <Route path="/" element={<Hero />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </div>
