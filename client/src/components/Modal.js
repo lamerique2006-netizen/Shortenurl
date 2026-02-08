@@ -25,7 +25,7 @@ function Modal({ mode = 'login', onClose }) {
 
       if (result.success) {
         onClose();
-        navigate('/dashboard');
+        setTimeout(() => navigate('/dashboard'), 300);
       } else {
         setError(result.error || 'Something went wrong');
       }
