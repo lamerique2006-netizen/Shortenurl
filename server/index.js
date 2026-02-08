@@ -20,6 +20,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Health check (no auth needed)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Backend is running ✅', timestamp: new Date() });
+});
+
 // Test Panel (for debugging)
 app.get('/test', (req, res) => {
   const testPath = path.join(__dirname, 'test.html');
