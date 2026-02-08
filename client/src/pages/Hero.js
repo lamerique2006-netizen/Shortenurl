@@ -11,7 +11,7 @@ function Hero() {
   const [copied, setCopied] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const { user, token } = useAuth();
+  const { user } = useAuth();
 
   const handleShorten = async (e) => {
     e.preventDefault();

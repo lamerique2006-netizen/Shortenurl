@@ -15,7 +15,7 @@ function Dashboard() {
   const fetchLinks = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.get('/api/links/list');
+      const response = await api.get('/api/links/list'); // token handled by api interceptor
 
       if (response.data.success) {
         const fetchedLinks = response.data.data || [];
@@ -30,7 +30,7 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     if (!user) {
