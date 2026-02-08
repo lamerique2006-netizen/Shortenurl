@@ -23,12 +23,15 @@ function Modal({ mode = 'login', onClose }) {
         ? await login(email, password)
         : await signup(email, password);
 
-      onClose();
-      setTimeout(() => navigate('/dashboard'), 300);
-      
+      // Only redirect if authentication was successful
       if (!result.success) {
         setError(result.error || 'Something went wrong');
+        return;
       }
+
+      // Verified: redirect to dashboard
+      onClose();
+      setTimeout(() => navigate('/dashboard'), 300);
     } catch (err) {
       setError('An error occurred');
     } finally {

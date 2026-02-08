@@ -16,13 +16,20 @@ router.post('/signup', async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  db.createUser(email, hashedPassword, (err) => {
+  db.createUser(email, hashedPassword, function(err) {
     if (err) {
       return res.json({ success: false, error: 'User already exists' });
     }
 
-    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ success: true, data: { token, email } });
+    // Get the newly created user to get the ID
+    db.getUserByEmail(email, (err, user) => {
+      if (err || !user) {
+        return res.json({ success: false, error: 'Failed to create user' });
+      }
+
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+      res.json({ success: true, data: { token, email: user.email, id: user.id } });
+    });
   });
 });
 
